@@ -1,0 +1,31 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: t1-java-demo
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  datasource:
+    url: "jdbc:postgresql://${DB_HOST:localhost:5432}/school?currentSchema=t1_demo"
+    username: ${DB_USER:t1}
+    password: ${DB_PASSWORD:0000}
+    driverClassName: org.postgresql.Driver
+    hikari:
+      pool-name: T1-DEMO-POOL
+      auto-commit: false
+      max-lifetime: 0
+      minimum-idle: 2
+      maximum-pool-size: 5
+  liquibase:
+    enabled: true
+    contexts: test
+    default-schema: t1_demo
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    database-change-log-table: t1$database_change_log
+    database-change-log-lock-table: t1$database_change_log_lock
