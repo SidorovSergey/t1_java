@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.t1.java.demo.aop.LogDataSourceError;
+import ru.t1.java.demo.aop.Metric;
 import ru.t1.java.demo.dao.AccountDao;
 import ru.t1.java.demo.dto.AccountDto;
 import ru.t1.java.demo.dto.AccountResDto;
@@ -24,49 +25,53 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
     private final AccountDao accountDao;
 
+    @Metric
     @Override
     @LogDataSourceError
     public AccountResDto getAccount(@NonNull Long id) {
-        log.info("getAccount to: id=[{}]", id);
+        log.info("to getAccount: id=[{}]", id);
 
         AccountResDto account = accountMapper.toAccountDto(accountDao.findById(id));
 
-        log.info("getAccount from: account=[{}]", account);
+        log.info("from getAccount: account=[{}]", account);
         return account;
     }
 
+    @Metric
     @Override
     @LogDataSourceError
     public List<AccountResDto> getAccounts(@NonNull Long clientId) {
-        log.info("getAccounts to: clientId=[{}]", clientId);
+        log.info("to getAccounts: clientId=[{}]", clientId);
 
         List<AccountResDto> accounts = accountMapper.toAccountDtos(accountDao.findByClientId(clientId));
 
-        log.info("getAccounts from: List=[{}]", accounts);
+        log.info("from getAccounts: List=[{}]", accounts);
         return accounts;
     }
 
+    @Metric
     @Override
     @LogDataSourceError
     public AccountResDto createAccount(@NonNull AccountDto accountDto) {
-        log.info("createAccount to: accountDto=[{}]", accountDto);
+        log.info("to createAccount: accountDto=[{}]", accountDto);
 
         Account managedAccount = accountDao.insert(
                 Optional.ofNullable(accountMapper.toAccount(accountDto))
                         .orElseThrow(() -> new AccountException("Invalid account data")));
         AccountResDto account = accountMapper.toAccountDto(managedAccount);
 
-        log.info("createAccount from: account=[{}]", account);
+        log.info("from createAccount: account=[{}]", account);
         return account;
     }
 
+    @Metric
     @Override
     @LogDataSourceError
     public void deleteAccount(@NonNull Long id) {
-        log.info("deleteAccount to: id=[{}]", id);
+        log.info("to deleteAccount: id=[{}]", id);
 
         accountDao.deleteById(id);
 
-        log.info("deleteAccount from");
+        log.info("from deleteAccount");
     }
 }
