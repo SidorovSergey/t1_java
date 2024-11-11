@@ -1,0 +1,95 @@
+version: "3.9"
+
+x-kafka-common: &kafka-common
+  image: bitnami/kafka:latest
+  healthcheck:
+    test: "bash -c 'printf \"\" > /dev/tcp/127.0.0.1/9091; exit $$?;'"
+    interval: 5s
+    timeout: 10s
+    retries: 3
+    start_period: 30s
+  restart: always
+  networks:
+    - t1-network
+
+x-env-common: &env-common
+  KAFKA_ENABLE_KRAFT: yes
+  KAFKA_KRAFT_CLUSTER_ID: abcdefghijklmnopqrstuv
+  KAFKA_CFG_PROCESS_ROLES: broker,controller
+  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+  KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9094,EXTERNAL://:29092
+  KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9094,2@kafka2:9094
+  ALLOW_PLAINTEXT_LISTENER: yes
+
+services:
+  postgres-service:
+    image: postgres:latest
+    container_name: Postgres
+    hostname: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0000
+    volumes:
+      - ./pg-data:/bitnami/postgresql
+    restart: always
+    networks:
+      - t1-network
+
+  kafka-1-service:
+    container_name: Kafka-1
+    <<: *kafka-common
+    hostname: kafka1
+    ports:
+      - "29092:29092"
+      - "9092:9092"
+    environment:
+      <<: *env-common
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_BROKER_ID: 1
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092,EXTERNAL://localhost:29092
+    volumes:
+      - ./kafka-1-data:/bitnami/kafka
+      
+  kafka-2-service:
+    container_name: Kafka-2
+    <<: *kafka-common
+    hostname: kafka2
+    ports:
+      - "29093:29092"
+      - "9093:9092"
+    environment:
+      <<: *env-common
+      KAFKA_CFG_NODE_ID: 2
+      KAFKA_CFG_BROKER_ID: 2
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9092,EXTERNAL://localhost:29092
+    volumes:
+      - ./kafka-2-data:/bitnami/kafka
+
+  kafka-ui-service:
+    container_name: Kafka-UI
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "9090:8080"
+    restart: always
+    networks:
+      - t1-network
+    environment:
+      KAFKA_CLUSTERS_0_NAME: dev-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092,kafka2:9092
+    depends_on:
+      - kafka-1-service
+      - kafka-2-service
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider localhost:8080 || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  t1-network:
+    driver: bridge
