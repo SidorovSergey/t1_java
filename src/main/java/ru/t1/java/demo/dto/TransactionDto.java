@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,13 +17,16 @@ public class TransactionDto {
     @JsonProperty("account_id")
     private Long accountId;
 
+    @JsonProperty("transaction_id")
+    private UUID transactionId;
+
     private BigDecimal amount;
 
     @JsonProperty("create_time")
     private LocalDateTime createTime;
 
     protected String baseString() {
-        return "accountId=" + accountId + ", createTime=" + createTime + ", amount=" + amount;
+        return "accountId=" + accountId + ", transactionId=" + transactionId + ", createTime=" + createTime + ", amount=" + amount;
     }
 
     @Override

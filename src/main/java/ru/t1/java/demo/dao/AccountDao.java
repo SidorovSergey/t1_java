@@ -10,6 +10,7 @@ import ru.t1.java.demo.model.Account;
 import ru.t1.java.demo.repository.AccountRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -25,6 +26,12 @@ public class AccountDao {
     }
 
     @NonNull
+    public Account findByAccountId(@NonNull UUID accountId) {
+        return accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new AccountException("AccountException not found by accountId=" + accountId));
+    }
+
+    @NonNull
     public List<Account> findByClientId(@NonNull Long clientId) {
         return accountRepository.findByClientId(clientId);
     }
@@ -32,7 +39,7 @@ public class AccountDao {
     @NonNull
     @Transactional
     public Account insert(@NonNull Account account) {
-        return accountRepository.save(account);
+        return accountRepository.updateOrInsert(account);
     }
 
     @Transactional

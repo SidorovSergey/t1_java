@@ -3,7 +3,9 @@ create type t1_demo.t1$account_status as enum ('ARRESTED', 'BLOCKED', 'CLOSED', 
 comment on type t1_demo.t1$account_status is 'Статус счета';
 
 -- add account_id
-alter table t1_demo.t1$account add column account_id uuid;
+alter table t1_demo.t1$account
+    add column account_id uuid,
+    add constraint account_id_key unique (account_id);
 comment on column t1_demo.t1$account.account_id is 'Уникальный идентификатор';
 
 update t1_demo.t1$account set account_id = gen_random_uuid();

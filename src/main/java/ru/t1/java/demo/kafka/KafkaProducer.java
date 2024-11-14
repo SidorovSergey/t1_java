@@ -4,6 +4,11 @@ import ru.t1.java.demo.dto.MetricType;
 
 public interface KafkaProducer<T> {
 
-    void sendMessage(String topic, MetricType type, T value);
+    String TRANSACTION_ACCEPT_NAME = "transaction_accept";
+    String METRIC_NAME = "metric";
+
+    void sendMessage(T value);
+
+    void sendMessage(T value, MetricType type);
 
 }

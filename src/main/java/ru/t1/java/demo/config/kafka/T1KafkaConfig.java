@@ -18,28 +18,28 @@ public class T1KafkaConfig {
     private List<String> bootstrapServers = new ArrayList<>(Collections.singletonList("localhost:9092"));
     private String clientId;
     private ListenerConfig listener;
-    private Map<String, ProducerConfig> producer;
-    private Map<String, ConsumerConfig> consumer;
+    private Map<String, ProducerConfig> producers;
+    private Map<String, ConsumerConfig> consumers;
 
 
     public Map<String, Object> buildProducerProperties(String key) {
-        if (!producer.containsKey(key)) {
+        if (!producers.containsKey(key)) {
             return null;
         }
 
         Map<String, Object> properties = buildCommonProperties();
-        properties.putAll(producer.get(key).buildProperties());
+        properties.putAll(producers.get(key).buildProperties());
 
         return properties;
     }
 
     public Map<String, Object> buildConsumerProperties(String key) {
-        if (!consumer.containsKey(key)) {
+        if (!consumers.containsKey(key)) {
             return null;
         }
 
         Map<String, Object> properties = buildCommonProperties();
-        properties.putAll(consumer.get(key).buildProperties());
+        properties.putAll(consumers.get(key).buildProperties());
 
         return properties;
     }

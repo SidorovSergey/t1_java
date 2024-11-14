@@ -3,6 +3,7 @@ package ru.t1.java.demo.config;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -13,8 +14,11 @@ import org.springframework.util.backoff.FixedBackOff;
 import ru.t1.java.demo.config.kafka.T1KafkaConfig;
 import ru.t1.java.demo.dto.AccountDto;
 import ru.t1.java.demo.dto.TransactionDto;
+import ru.t1.java.demo.dto.TransactionResultDto;
 
-import static ru.t1.java.demo.service.MetricService.METRIC_NAME;
+import static ru.t1.java.demo.kafka.KafkaConsumer.*;
+import static ru.t1.java.demo.kafka.KafkaProducer.METRIC_NAME;
+import static ru.t1.java.demo.kafka.KafkaProducer.TRANSACTION_ACCEPT_NAME;
 
 @Slf4j
 @Configuration
@@ -24,10 +28,16 @@ public class KafkaConfig {
     private final T1KafkaConfig config;
 
     // Producers
-    @Bean(METRIC_NAME)
+    @Bean
+    @Qualifier(TRANSACTION_ACCEPT_NAME)
+    public KafkaTemplate<String, Object> transactionAcceptKafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory(TRANSACTION_ACCEPT_NAME));
+    }
+
+    @Bean
+    @Qualifier(METRIC_NAME)
     public KafkaTemplate<String, Object> metricKafkaTemplate() {
-        var t = producerFactory(METRIC_NAME);
-        return new KafkaTemplate<>(t);
+        return new KafkaTemplate<>(producerFactory(METRIC_NAME));
     }
 
     @NonNull
@@ -39,14 +49,21 @@ public class KafkaConfig {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, AccountDto> accountContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, AccountDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factoryBuilder(new DefaultKafkaConsumerFactory<>(config.buildConsumerProperties("account")), factory);
+        factoryBuilder(new DefaultKafkaConsumerFactory<>(config.buildConsumerProperties(ACCOUNT_NAME)), factory);
         return factory;
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, TransactionDto> transactionContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, TransactionDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factoryBuilder(new DefaultKafkaConsumerFactory<>(config.buildConsumerProperties("transaction")), factory);
+        factoryBuilder(new DefaultKafkaConsumerFactory<>(config.buildConsumerProperties(TRANSACTION_NAME)), factory);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, TransactionResultDto> transactionResultContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, TransactionResultDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factoryBuilder(new DefaultKafkaConsumerFactory<>(config.buildConsumerProperties(TRANSACTION_RESULT_NAME)), factory);
         return factory;
     }
 

@@ -3,7 +3,9 @@ create type t1_demo.t1$transaction_status as enum ('ACCEPTED', 'REJECTED', 'BLOC
 comment on type t1_demo.t1$transaction_status is 'Статус транзакции';
 
 -- add transaction_id
-alter table t1_demo.t1$transaction add column transaction_id uuid;
+alter table t1_demo.t1$transaction
+    add column transaction_id uuid,
+    add constraint transaction_id_key unique (transaction_id);
 comment on column t1_demo.t1$transaction.transaction_id is 'Уникальный идентификатор';
 
 update t1_demo.t1$transaction set transaction_id = gen_random_uuid();
@@ -15,5 +17,5 @@ alter table t1_demo.t1$transaction add column transaction_status t1_demo.t1$tran
 comment on column t1_demo.t1$transaction.transaction_status is 'Статус транзакции';
 
 -- add timestamp
-alter table t1_demo.t1$transaction add column timestamp timestamp;
-comment on column t1_demo.t1$transaction.timestamp is 'Замороженная сумма';
+alter table t1_demo.t1$transaction add column timestamp timestamp without time zone default current_timestamp;
+comment on column t1_demo.t1$transaction.timestamp is 'Временная метка транзакции';
