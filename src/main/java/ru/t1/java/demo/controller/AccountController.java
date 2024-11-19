@@ -1,6 +1,5 @@
 package ru.t1.java.demo.controller;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +9,6 @@ import ru.t1.java.demo.service.AccountService;
 
 import java.util.List;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController

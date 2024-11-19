@@ -29,3 +29,52 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     database-change-log-table: t1$database_change_log
     database-change-log-lock-table: t1$database_change_log_lock
+
+t1-demo:
+  metric:
+    limit-time-ms: 50
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:29092,localhost:29093}
+    listener:
+      ack-mode: manual_immediate
+      poll-timeout: 5000
+      concurrency: 1
+      micrometer-enabled: true
+      batch-listener: true
+      error-handler:
+        interval: 1000
+        max-attempts: 3
+    producer:
+      metric:
+        topic: t1_demo_metrics
+        acks: all
+        retries: 3
+        retry-backoff-ms: 1000
+        enable-idempotence: false
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      account:
+        topic: t1_demo_accounts
+        group-id: t1-account-group
+        enable-auto-commit: false
+        auto-offset-reset: earliest
+        max-poll-records: 1
+        max-poll-interval-ms: 3000
+        session-timeout-ms: 15000
+        max-partition-fetch-bytes: 300000
+        type-dto: ru.t1.java.demo.dto.AccountDto
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: ru.t1.java.demo.kafka.MessageDeserializer
+      transaction:
+        topic: t1_demo_transactions
+        group-id: t1-transaction-group
+        enable-auto-commit: false
+        auto-offset-reset: earliest
+        max-poll-records: 1
+        max-poll-interval-ms: 3000
+        session-timeout-ms: 15000
+        max-partition-fetch-bytes: 300000
+        type-dto: ru.t1.java.demo.dto.TransactionDto
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: ru.t1.java.demo.kafka.MessageDeserializer

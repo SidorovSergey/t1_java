@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.t1.java.demo.aop.LogDataSourceError;
+import ru.t1.java.demo.aop.Metric;
 import ru.t1.java.demo.dao.TransactionDao;
 import ru.t1.java.demo.dto.TransactionDto;
 import ru.t1.java.demo.dto.TransactionResDto;
@@ -24,49 +25,53 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionMapper transactionMapper;
     private final TransactionDao transactionDao;
 
+    @Metric
     @Override
     @LogDataSourceError
     public TransactionResDto getTransaction(@NonNull Long id) {
-        log.info("getTransaction to: id=[{}]", id);
+        log.info("to getTransaction: id=[{}]", id);
 
         TransactionResDto transaction = transactionMapper.toTransactionDto(transactionDao.findById(id));
 
-        log.info("getTransaction from: transaction=[{}]", transaction);
+        log.info("from getTransaction: transaction=[{}]", transaction);
         return transaction;
     }
 
+    @Metric
     @Override
     @LogDataSourceError
     public List<TransactionResDto> getTransactions(@NonNull Long accountId) {
-        log.info("getTransactions to: accountId=[{}]", accountId);
+        log.info("to getTransactions: accountId=[{}]", accountId);
 
         List<TransactionResDto> transactions = transactionMapper.toTransactionDtos(transactionDao.findByAccountId(accountId));
 
-        log.info("getTransactions from: List=[{}]", transactions);
+        log.info("from getTransactions: List=[{}]", transactions);
         return transactions;
     }
 
+    @Metric
     @Override
     @LogDataSourceError
     public TransactionResDto createTransaction(@NonNull TransactionDto transactionDto) {
-        log.info("createTransaction to: transactionDto=[{}]", transactionDto);
+        log.info("to createTransaction: transactionDto=[{}]", transactionDto);
 
         Transaction managedTransaction = transactionDao.insert(
                 Optional.ofNullable(transactionMapper.toTransaction(transactionDto))
                         .orElseThrow(() -> new TransactionException("Invalid transaction data")));
         TransactionResDto transaction = transactionMapper.toTransactionDto(managedTransaction);
 
-        log.info("createTransaction from: transaction=[{}]", transaction);
+        log.info("from createTransaction: transaction=[{}]", transaction);
         return transaction;
     }
 
+    @Metric
     @Override
     @LogDataSourceError
     public void deleteTransaction(@NonNull Long id) {
-        log.info("deleteTransaction to: id=[{}]", id);
+        log.info("to deleteTransaction: id=[{}]", id);
 
         transactionDao.deleteById(id);
 
-        log.info("deleteTransaction from");
+        log.info("from deleteTransaction");
     }
 }

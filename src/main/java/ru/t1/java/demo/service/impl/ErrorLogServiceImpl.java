@@ -17,7 +17,7 @@ public class ErrorLogServiceImpl implements ErrorLogService {
 
     @Override
     public void logError(@NonNull String message, @NonNull String signature, @NonNull String stackTrace) {
-        log.info("logError to: message=[{}], signature=[{}], stackTrace=[{}]", message, signature, stackTrace);
+        log.info("to logError: message=[{}], signature=[{}], stackTrace=[{}]", message, signature, stackTrace);
 
         var logError = errorLogDao.insert(
                 new DataSourceErrorLog()
@@ -25,7 +25,7 @@ public class ErrorLogServiceImpl implements ErrorLogService {
                         .setSignature(signature)
                         .setStackTrace(stackTrace));
 
-        log.info("logError from: id=[{}]", logError.getId());
+        log.info("from logError: id=[{}]", logError.getId());
     }
 
 }
