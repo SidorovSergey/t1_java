@@ -8,8 +8,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
+import ru.t1.java.demo.dto.MetricDto;
+import ru.t1.java.demo.kafka.KafkaProducer;
 import ru.t1.java.demo.service.ErrorLogService;
-import ru.t1.java.demo.service.MetricService;
 
 import java.lang.reflect.Method;
 
@@ -29,7 +30,7 @@ public class ExceptionAspectTest {
     private Exception ex;
 
     @Mock
-    private MetricService metricService;
+    private KafkaProducer<MetricDto> kafkaProducer;
 
     @Mock
     private ErrorLogService errorLogService;
@@ -67,7 +68,7 @@ public class ExceptionAspectTest {
         when(signature.getParameterNames()).thenReturn(new String[]{"id", "value"});
 
         when(joinPoint.getSignature()).thenReturn(signature);
-        doThrow(new RuntimeException("Error send to kafka")).when(metricService).send(any(), any());
+        doThrow(new RuntimeException("Error send to kafka")).when(kafkaProducer).sendMessage(any(), any());
 
         // when
         exceptionAspect.handleException(joinPoint, ex);
@@ -87,7 +88,7 @@ public class ExceptionAspectTest {
         when(signature.getParameterNames()).thenReturn(new String[]{"id", "value"});
 
         when(joinPoint.getSignature()).thenReturn(signature);
-        doThrow(new RuntimeException("Error send to kafka")).when(metricService).send(any(), any());
+        doThrow(new RuntimeException("Error send to kafka")).when(kafkaProducer).sendMessage(any(), any());
         doThrow(new RuntimeException("Error save to DB")).when(errorLogService).logError(anyString(), anyString(), anyString());
 
         // when

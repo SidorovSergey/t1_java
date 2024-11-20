@@ -19,7 +19,7 @@ public class ErrorLogServiceImpl implements ErrorLogService {
     public void logError(@NonNull String message, @NonNull String signature, @NonNull String stackTrace) {
         log.info("to logError: message=[{}], signature=[{}], stackTrace=[{}]", message, signature, stackTrace);
 
-        var logError = errorLogDao.insert(
+        DataSourceErrorLog logError = errorLogDao.insert(
                 new DataSourceErrorLog()
                         .setMessage(message)
                         .setSignature(signature)

@@ -9,9 +9,11 @@ import ru.t1.java.demo.aop.Metric;
 import ru.t1.java.demo.dao.TransactionDao;
 import ru.t1.java.demo.dto.TransactionDto;
 import ru.t1.java.demo.dto.TransactionResDto;
+import ru.t1.java.demo.dto.TransactionResultDto;
 import ru.t1.java.demo.exception.TransactionException;
 import ru.t1.java.demo.model.Transaction;
 import ru.t1.java.demo.service.TransactionService;
+import ru.t1.java.demo.service.handler.TransactionHandler;
 import ru.t1.java.demo.util.TransactionMapper;
 
 import java.util.List;
@@ -22,8 +24,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-    private final TransactionMapper transactionMapper;
     private final TransactionDao transactionDao;
+    private final TransactionMapper transactionMapper;
+    private final TransactionHandler transactionHandler;
 
     @Metric
     @Override
@@ -73,5 +76,46 @@ public class TransactionServiceImpl implements TransactionService {
         transactionDao.deleteById(id);
 
         log.info("from deleteTransaction");
+    }
+
+    @Metric
+    @Override
+    @LogDataSourceError
+    public void handleTransaction(@NonNull String key, @NonNull TransactionDto transactionDto) {
+        log.info("to handleTransaction: key=[{}], transactionDto=[{}]", key, transactionDto);
+
+        try {
+            Transaction transaction = transactionHandler.request(transactionDto);
+
+            log.debug("Transaction handled: transaction=[{}]", transaction);
+        } catch (Exception ex) {
+            log.error("Fail handle transaction: key=[{}], transactionDto=[{}]", key, transactionDto, ex);
+        }
+
+        log.info("from handleTransaction: key=[{}]", key);
+    }
+
+    @Metric
+    @Override
+    @LogDataSourceError
+    public void handleTransactionResult(@NonNull String key, @NonNull TransactionResultDto transactionResultDto) {
+        log.info("to handleTransactionResult: key=[{}], transactionResultDto=[{}]", key, transactionResultDto);
+
+        try {
+            Transaction transaction = switch (transactionResultDto.getStatus()) {
+                case ACCEPTED -> transactionHandler.accept(transactionResultDto);
+                case REJECTED -> transactionHandler.reject(transactionResultDto);
+                case BLOCKED -> transactionHandler.block(transactionResultDto);
+                default -> {
+                    log.warn("Unexpected status: status=[{}]", transactionResultDto.getStatus());
+                    yield null;
+                }};
+
+            log.debug("Transaction result handled: transaction=[{}]", transaction);
+        } catch (Exception ex) {
+            log.error("Fail handle transaction result: key=[{}], transactionDto=[{}]", key, transactionResultDto, ex);
+        }
+
+        log.info("from handleTransactionResult: key=[{}]", key);
     }
 }

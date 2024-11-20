@@ -8,8 +8,8 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import ru.t1.java.demo.dto.MetricDto;
+import ru.t1.java.demo.kafka.KafkaProducer;
 import ru.t1.java.demo.service.ErrorLogService;
-import ru.t1.java.demo.service.MetricService;
 
 import static ru.t1.java.demo.dto.MetricType.DATA_SOURCE;
 
@@ -19,7 +19,7 @@ import static ru.t1.java.demo.dto.MetricType.DATA_SOURCE;
 @RequiredArgsConstructor
 public class ExceptionAspect extends BaseAspect {
 
-    private final MetricService metricService;
+    private final KafkaProducer<MetricDto> kafkaProducer;
     private final ErrorLogService errorLogService;
 
     @AfterThrowing(pointcut = "@annotation(LogDataSourceError)", throwing = "ex")
@@ -28,7 +28,7 @@ public class ExceptionAspect extends BaseAspect {
 
         MetricDto metric = getMetric(joinPoint);
         try {
-            metricService.send(DATA_SOURCE, metric);
+            kafkaProducer.sendMessage(metric, DATA_SOURCE);
         } catch (Exception e) {
             log.error("Failed to send metric: metric=[{}]", metric, ex);
 

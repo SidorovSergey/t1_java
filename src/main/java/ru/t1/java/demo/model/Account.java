@@ -8,6 +8,7 @@ import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -26,6 +27,14 @@ public class Account {
     @Column(name = "client_id", nullable = false)
     private Long clientId;
 
+    @Column(name = "account_id", nullable = false)
+    private UUID accountId;
+
+    @Enumerated(STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @Column(name = "account_status", nullable = false)
+    private AccountStatus accountStatus;
+
     @Enumerated(STRING)
     @JdbcType(PostgreSQLEnumJdbcType.class)
     @Column(name = "account_type", nullable = false)
@@ -33,4 +42,7 @@ public class Account {
 
     @Column(name = "balance", precision = 12, scale = 2, nullable = false)
     private BigDecimal balance;
+
+    @Column(name = "frozen_amount", precision = 12, scale = 2)
+    private BigDecimal frozenAmount;
 }

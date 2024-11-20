@@ -9,7 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.springframework.test.util.ReflectionTestUtils;
-import ru.t1.java.demo.service.MetricService;
+import ru.t1.java.demo.dto.MetricDto;
+import ru.t1.java.demo.kafka.KafkaProducer;
 
 import java.lang.reflect.Method;
 
@@ -25,7 +26,7 @@ public class MetricAspectTest {
     private ProceedingJoinPoint joinPoint;
 
     @Mock
-    private MetricService metricService;
+    private KafkaProducer<MetricDto> kafkaProducer;
 
     @InjectMocks
     private MetricAspect metricAspect;

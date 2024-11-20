@@ -44,7 +44,15 @@ t1-demo:
       error-handler:
         interval: 1000
         max-attempts: 3
-    producer:
+    producers:
+      transaction_accept:
+        topic: t1_demo_transaction_accept
+        acks: all
+        retries: 3
+        retry-backoff-ms: 1000
+        enable-idempotence: false
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       metric:
         topic: t1_demo_metrics
         acks: all
@@ -53,7 +61,7 @@ t1-demo:
         enable-idempotence: false
         key-serializer: org.apache.kafka.common.serialization.StringSerializer
         value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
+    consumers:
       account:
         topic: t1_demo_accounts
         group-id: t1-account-group
@@ -64,6 +72,18 @@ t1-demo:
         session-timeout-ms: 15000
         max-partition-fetch-bytes: 300000
         type-dto: ru.t1.java.demo.dto.AccountDto
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: ru.t1.java.demo.kafka.MessageDeserializer
+      transaction_result:
+        topic: t1_demo_transaction_result
+        group-id: t1-transaction-result-group
+        enable-auto-commit: false
+        auto-offset-reset: earliest
+        max-poll-records: 1
+        max-poll-interval-ms: 3000
+        session-timeout-ms: 15000
+        max-partition-fetch-bytes: 300000
+        type-dto: ru.t1.java.demo.dto.TransactionResultDto
         key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value-deserializer: ru.t1.java.demo.kafka.MessageDeserializer
       transaction:

@@ -10,6 +10,7 @@ import ru.t1.java.demo.model.Transaction;
 import ru.t1.java.demo.repository.TransactionRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -25,14 +26,20 @@ public class TransactionDao {
     }
 
     @NonNull
+    public Transaction findByTransactionId(@NonNull UUID transactionId) {
+        return transactionRepository.findByTransactionId(transactionId)
+                .orElseThrow(() -> new TransactionException("Transaction not found by transactionId=" + transactionId));
+    }
+
+    @NonNull
     public List<Transaction> findByAccountId(@NonNull Long accountId) {
         return transactionRepository.findByAccountId(accountId);
     }
 
     @NonNull
     @Transactional
-    public Transaction insert(@NonNull Transaction account) {
-        return transactionRepository.save(account);
+    public Transaction insert(@NonNull Transaction transaction) {
+        return transactionRepository.save(transaction);
     }
 
     @Transactional

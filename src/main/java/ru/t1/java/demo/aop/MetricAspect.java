@@ -1,5 +1,6 @@
 package ru.t1.java.demo.aop;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -8,7 +9,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.t1.java.demo.dto.MetricDto;
-import ru.t1.java.demo.service.MetricService;
+import ru.t1.java.demo.kafka.KafkaProducer;
 
 import static ru.t1.java.demo.dto.MetricType.METRICS;
 
@@ -21,7 +22,7 @@ public class MetricAspect extends BaseAspect {
     @Value("${t1-demo.metric.limit-time-ms:100}")
     private long limitTimeMs;
 
-    private final MetricService metricService;
+    private final KafkaProducer<MetricDto> kafkaProducer;
 
     @Around("@annotation(Metric)")
     public Object timeMeasure(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -44,9 +45,9 @@ public class MetricAspect extends BaseAspect {
         return result;
     }
 
-    private void sendMetric(MetricDto metric) {
+    private void sendMetric(@NonNull MetricDto metric) {
         try {
-            metricService.send(METRICS, metric);
+            kafkaProducer.sendMessage(metric, METRICS);
         } catch (Exception ex) {
             log.error("Failed to send metric: metric=[{}]", metric, ex);
         }

@@ -1,9 +1,13 @@
 package ru.t1.java.demo.util;
 
+import lombok.NonNull;
 import org.mapstruct.Mapper;
 import org.springframework.lang.Nullable;
+import ru.t1.java.demo.dto.TransactionAcceptDto;
 import ru.t1.java.demo.dto.TransactionDto;
 import ru.t1.java.demo.dto.TransactionResDto;
+import ru.t1.java.demo.model.Account;
+import ru.t1.java.demo.model.Client;
 import ru.t1.java.demo.model.Transaction;
 
 import java.util.ArrayList;
@@ -25,6 +29,8 @@ public abstract class TransactionMapper {
         return (TransactionResDto) new TransactionResDto()
                 .setId(transaction.getId())
                 .setAccountId(transaction.getAccountId())
+                .setTransactionId(transaction.getTransactionId())
+                .setTransactionStatus(transaction.getTransactionStatus().name())
                 .setAmount(transaction.getAmount())
                 .setCreateTime(transaction.getCreateTime());
     }
@@ -51,8 +57,21 @@ public abstract class TransactionMapper {
         }
         return new Transaction()
                 .setAccountId(transactionDto.getAccountId())
+                .setTransactionId(transactionDto.getTransactionId())
                 .setAmount(transactionDto.getAmount())
                 .setCreateTime(transactionDto.getCreateTime());
+    }
+
+    public TransactionAcceptDto toTransactionAcceptDto(@NonNull Client client,
+                                                       @NonNull Account account,
+                                                       @NonNull Transaction transaction) {
+        return new TransactionAcceptDto()
+                .setClientId(client.getClientId())
+                .setAccountId(account.getAccountId())
+                .setTransactionId(transaction.getTransactionId())
+                .setTimestamp(transaction.getTimestamp())
+                .setTransactionAmount(transaction.getAmount())
+                .setAccountBalance(account.getBalance());
     }
 
 }
