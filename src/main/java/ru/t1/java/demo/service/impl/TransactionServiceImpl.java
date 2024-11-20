@@ -6,39 +6,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.t1.java.demo.aop.LogDataSourceError;
 import ru.t1.java.demo.aop.Metric;
-import ru.t1.java.demo.dao.AccountDao;
-import ru.t1.java.demo.dao.ClientDao;
 import ru.t1.java.demo.dao.TransactionDao;
-import ru.t1.java.demo.dto.TransactionAcceptDto;
 import ru.t1.java.demo.dto.TransactionDto;
 import ru.t1.java.demo.dto.TransactionResDto;
 import ru.t1.java.demo.dto.TransactionResultDto;
 import ru.t1.java.demo.exception.TransactionException;
-import ru.t1.java.demo.kafka.KafkaProducer;
-import ru.t1.java.demo.model.Account;
 import ru.t1.java.demo.model.Transaction;
 import ru.t1.java.demo.service.TransactionService;
-import ru.t1.java.demo.service.handler.TransactionResultHandler;
+import ru.t1.java.demo.service.handler.TransactionHandler;
 import ru.t1.java.demo.util.TransactionMapper;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-
-import static ru.t1.java.demo.model.AccountStatus.OPEN;
-import static ru.t1.java.demo.model.TransactionStatus.REQUESTED;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-    private final AccountDao accountDao;
-    private final ClientDao clientDao;
-    private final TransactionMapper transactionMapper;
     private final TransactionDao transactionDao;
-    private final TransactionResultHandler transactionResultHandler;
-    private final KafkaProducer<TransactionAcceptDto> transactionAcceptProducer;
+    private final TransactionMapper transactionMapper;
+    private final TransactionHandler transactionHandler;
 
     @Metric
     @Override
@@ -70,7 +58,9 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionResDto createTransaction(@NonNull TransactionDto transactionDto) {
         log.info("to createTransaction: transactionDto=[{}]", transactionDto);
 
-        Transaction managedTransaction = transactionDao.insert(getTransactionFromDto(transactionDto));
+        Transaction managedTransaction = transactionDao.insert(
+                Optional.ofNullable(transactionMapper.toTransaction(transactionDto))
+                        .orElseThrow(() -> new TransactionException("Invalid transaction data")));
         TransactionResDto transaction = transactionMapper.toTransactionDto(managedTransaction);
 
         log.info("from createTransaction: transaction=[{}]", transaction);
@@ -95,22 +85,9 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("to handleTransaction: key=[{}], transactionDto=[{}]", key, transactionDto);
 
         try {
-            Transaction transaction = getTransactionFromDto(transactionDto);
-            Account account = accountDao.findById(transaction.getAccountId());
+            Transaction transaction = transactionHandler.request(transactionDto);
 
-            if (OPEN == account.getAccountStatus()) {
-                transactionDao.insert(transaction
-                        .setTransactionStatus(REQUESTED)
-                        .setTimestamp(new Timestamp(System.currentTimeMillis())));
-
-                account.setBalance(account.getBalance().subtract(transaction.getAmount()));
-
-                transactionAcceptProducer.sendMessage(
-                        transactionMapper.toTransactionAcceptDto(clientDao.findById(account.getClientId()), account, transaction));
-            } else {
-                log.warn("Account is not open: account=[{}]", account);
-            }
-
+            log.debug("Transaction handled: transaction=[{}]", transaction);
         } catch (Exception ex) {
             log.error("Fail handle transaction: key=[{}], transactionDto=[{}]", key, transactionDto, ex);
         }
@@ -126,25 +103,19 @@ public class TransactionServiceImpl implements TransactionService {
 
         try {
             Transaction transaction = switch (transactionResultDto.getStatus()) {
-                case ACCEPTED -> transactionResultHandler.accept(transactionResultDto);
-                case REJECTED -> transactionResultHandler.reject(transactionResultDto);
-                case BLOCKED -> transactionResultHandler.block(transactionResultDto);
+                case ACCEPTED -> transactionHandler.accept(transactionResultDto);
+                case REJECTED -> transactionHandler.reject(transactionResultDto);
+                case BLOCKED -> transactionHandler.block(transactionResultDto);
                 default -> {
                     log.warn("Unexpected status: status=[{}]", transactionResultDto.getStatus());
                     yield null;
                 }};
 
-            log.debug("Transaction handled: transaction=[{}]", transaction);
+            log.debug("Transaction result handled: transaction=[{}]", transaction);
         } catch (Exception ex) {
             log.error("Fail handle transaction result: key=[{}], transactionDto=[{}]", key, transactionResultDto, ex);
         }
 
         log.info("from handleTransactionResult: key=[{}]", key);
-    }
-
-    @NonNull
-    private Transaction getTransactionFromDto(@NonNull TransactionDto transactionDto) {
-        return Optional.ofNullable(transactionMapper.toTransaction(transactionDto))
-                .orElseThrow(() -> new TransactionException("Invalid transaction data"));
     }
 }

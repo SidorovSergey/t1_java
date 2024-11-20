@@ -29,6 +29,8 @@ public abstract class TransactionMapper {
         return (TransactionResDto) new TransactionResDto()
                 .setId(transaction.getId())
                 .setAccountId(transaction.getAccountId())
+                .setTransactionId(transaction.getTransactionId())
+                .setTransactionStatus(transaction.getTransactionStatus().name())
                 .setAmount(transaction.getAmount())
                 .setCreateTime(transaction.getCreateTime());
     }

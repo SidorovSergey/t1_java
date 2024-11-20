@@ -31,7 +31,7 @@ public class AccountServiceImpl implements AccountService {
     public AccountResDto getAccount(@NonNull Long id) {
         log.info("to getAccount: id=[{}]", id);
 
-        AccountResDto account = accountMapper.toAccountDto(accountDao.findById(id));
+        AccountResDto account = accountMapper.toAccountResDto(accountDao.findById(id));
 
         log.info("from getAccount: account=[{}]", account);
         return account;
@@ -58,7 +58,7 @@ public class AccountServiceImpl implements AccountService {
         Account managedAccount = accountDao.insert(
                 Optional.ofNullable(accountMapper.toAccount(accountDto))
                         .orElseThrow(() -> new AccountException("Invalid account data")));
-        AccountResDto account = accountMapper.toAccountDto(managedAccount);
+        AccountResDto account = accountMapper.toAccountResDto(managedAccount);
 
         log.info("from createAccount: account=[{}]", account);
         return account;

@@ -5,6 +5,7 @@ import org.springframework.lang.Nullable;
 import ru.t1.java.demo.dto.AccountDto;
 import ru.t1.java.demo.dto.AccountResDto;
 import ru.t1.java.demo.model.Account;
+import ru.t1.java.demo.model.AccountStatus;
 import ru.t1.java.demo.model.AccountType;
 
 import java.util.ArrayList;
@@ -18,14 +19,16 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 public abstract class AccountMapper {
 
     @Nullable
-    public AccountResDto toAccountDto(@Nullable Account account) {
+    public AccountResDto toAccountResDto(@Nullable Account account) {
         if (isNull(account)) {
             return null;
         }
         return (AccountResDto) new AccountResDto()
                 .setId(account.getId())
+                .setAccountId(account.getAccountId())
                 .setClientId(account.getClientId())
                 .setAccountType(account.getAccountType().name())
+                .setAccountStatus(account.getAccountStatus().name())
                 .setBalance(account.getBalance());
     }
 
@@ -38,7 +41,7 @@ public abstract class AccountMapper {
         List<AccountResDto> dtos = new ArrayList<>();
 
         accounts.forEach(account ->
-                Optional.ofNullable(toAccountDto(account))
+                Optional.ofNullable(toAccountResDto(account))
                         .ifPresent(dtos::add));
 
         return dtos;
@@ -51,7 +54,9 @@ public abstract class AccountMapper {
         }
         return new Account()
                 .setClientId(accountDto.getClientId())
+                .setAccountId(accountDto.getAccountId())
                 .setAccountType(AccountType.valueOf(accountDto.getAccountType()))
+                .setAccountStatus(AccountStatus.valueOf(accountDto.getAccountStatus()))
                 .setBalance(accountDto.getBalance());
     }
 
