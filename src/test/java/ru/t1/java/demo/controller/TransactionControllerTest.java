@@ -50,7 +50,7 @@ public class TransactionControllerTest extends BaseControllerTest {
                         .setAccountId(191L)
                         .setAmount(new BigDecimal("2959611467.04"))
                         .setCreateTime(LocalDateTime.of(2024, 9, 1, 23, 51, 20)));
-        String expectedResponse = "{\"amount\":2959611467.04,\"id\":200,\"account_id\":191,\"create_time\":[2024,9,1,23,51,20]}";
+        String expectedResponse = "{\"amount\":2959611467.04,\"id\":200,\"account_id\":191,\"transaction_id\":null,\"transaction_status\":null,\"create_time\":[2024,9,1,23,51,20]}";
         RequestBuilder request = MockMvcRequestBuilders.get("/transaction/")
                 .param("id", "200")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -74,7 +74,7 @@ public class TransactionControllerTest extends BaseControllerTest {
                                 .setAccountId(191L)
                                 .setAmount(new BigDecimal("6728750353.69"))
                                 .setCreateTime(LocalDateTime.of(2024, 2, 25, 12, 55, 18))));
-        String expectedResponse = "[{\"amount\":9562165243.12,\"id\":20,\"account_id\":191,\"create_time\":[2024,9,1,23,51,20]},{\"amount\":6728750353.69,\"id\":305,\"account_id\":191,\"create_time\":[2024,2,25,12,55,18]}]";
+        String expectedResponse = "[{\"amount\":9562165243.12,\"id\":20,\"account_id\":191,\"transaction_id\":null,\"transaction_status\":null,\"create_time\":[2024,9,1,23,51,20]},{\"amount\":6728750353.69,\"id\":305,\"account_id\":191,\"transaction_id\":null,\"transaction_status\":null,\"create_time\":[2024,2,25,12,55,18]}]";
         RequestBuilder request = MockMvcRequestBuilders.get("/transaction/transactions")
                 .param("account_id", "191")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -92,7 +92,7 @@ public class TransactionControllerTest extends BaseControllerTest {
                         .setAccountId(389L)
                         .setAmount(new BigDecimal("0.95"))
                         .setCreateTime(LocalDateTime.of(2024, 10, 16, 16, 0, 45)));
-        String expectedResponse = "{\"amount\":0.95,\"id\":150,\"account_id\":389,\"create_time\":[2024,10,16,16,00,45]}";
+        String expectedResponse = "{\"amount\":0.95,\"id\":150,\"account_id\":389,\"transaction_id\":null,\"transaction_status\":null,\"create_time\":[2024,10,16,16,0,45]}";
         RequestBuilder request = MockMvcRequestBuilders.post("/transaction/create")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .content("{\"amount\":0.95,\"account_id\":389,\"create_time\":\"2024-10-16T16:00:45\"}");

@@ -49,7 +49,7 @@ public class AccountControllerTestTest extends BaseControllerTest {
                         .setAccountType("DEBIT")
                         .setClientId(471L)
                         .setBalance(new BigDecimal("2959611467.04")));
-        String expectedResponse = "{\"balance\":2959611467.04,\"id\":191,\"client_id\":471,\"account_type\":\"DEBIT\"}";
+        String expectedResponse = "{\"balance\":2959611467.04,\"id\":191,\"client_id\":471,\"account_id\":null,\"account_type\":\"DEBIT\",\"account_status\":null}";
         RequestBuilder request = MockMvcRequestBuilders.get("/account/")
                 .param("id", "191")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -73,7 +73,7 @@ public class AccountControllerTestTest extends BaseControllerTest {
                                 .setAccountType("CREDIT")
                                 .setClientId(471L)
                                 .setBalance(new BigDecimal("7110959058.99"))));
-        String expectedResponse = "[{\"balance\":2959611467.04,\"id\":191,\"client_id\":471,\"account_type\":\"DEBIT\"},{\"balance\":7110959058.99,\"id\":509,\"client_id\":471,\"account_type\":\"CREDIT\"}]";
+        String expectedResponse = "[{\"balance\":2959611467.04,\"id\":191,\"client_id\":471,\"account_id\":null,\"account_type\":\"DEBIT\",\"account_status\":null},{\"balance\":7110959058.99,\"id\":509,\"client_id\":471,\"account_id\":null,\"account_type\":\"CREDIT\",\"account_status\":null}]";
         RequestBuilder request = MockMvcRequestBuilders.get("/account/accounts")
                 .param("client_id", "471")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -91,7 +91,7 @@ public class AccountControllerTestTest extends BaseControllerTest {
                         .setAccountType("CREDIT")
                         .setClientId(471L)
                         .setBalance(new BigDecimal("0.22")));
-        String expectedResponse = "{\"balance\":0.22,\"id\":3011,\"client_id\":471,\"account_type\":\"CREDIT\"}";
+        String expectedResponse = "{\"balance\":0.22,\"id\":3011,\"client_id\":471,\"account_id\":null,\"account_type\":\"CREDIT\",\"account_status\":null}";
         RequestBuilder request = MockMvcRequestBuilders.post("/account/create")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .content("{\"balance\":0.22,\"client_id\":471,\"account_type\":\"CREDIT\"}");
